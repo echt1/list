@@ -1,0 +1,1051 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>echtlist</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500;600&display=swap"/>
+<style>
+:root {
+  --bg: #0d0b0b;
+  --surface: #161212;
+  --surface2: #1f1a1a;
+  --border: #2e2424;
+  --accent: #c0392b;
+  --accent2: #7d1a10;
+  --accent-glow: rgba(192,57,43,0.15);
+  --text: #f4f0f0;
+  --muted: #7a6b6b;
+  --green: #22c55e;
+  --red: #ef4444;
+  --amber: #f59e0b;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; }
+body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; min-height: 100vh; display: flex; flex-direction: column; }
+
+nav { display: flex; align-items: center; justify-content: space-between; padding: 1rem 2rem; border-bottom: 1px solid var(--border); position: sticky; top: 0; background: var(--bg); z-index: 100; flex-shrink: 0; }
+.nav-logo { font-family: 'Space Mono', monospace; font-size: 1.1rem; color: var(--accent); letter-spacing: -0.5px; }
+.nav-logo span { color: var(--text); }
+.nav-right { display: flex; align-items: center; gap: 1rem; }
+.nav-btn { background: none; border: 1px solid var(--border); color: var(--muted); padding: 0.4rem 1rem; border-radius: 8px; cursor: pointer; font-family: 'DM Sans', sans-serif; font-size: 0.85rem; transition: all 0.2s; }
+.nav-btn:hover { border-color: var(--accent); color: var(--accent); }
+#loginBtn.logged-in { border-color: var(--accent); color: var(--accent); background: var(--accent-glow); }
+#addBtn { background: var(--accent); border: none; color: #fff; padding: 0.4rem 1rem; border-radius: 8px; cursor: pointer; font-family: 'DM Sans', sans-serif; font-size: 0.85rem; font-weight: 600; display: none; transition: background 0.2s; }
+#addBtn:hover { background: var(--accent2); }
+
+main { max-width: 1280px; width: 100%; margin: 0 auto; padding: 2rem; flex: 1; }
+
+.filterbar { display: flex; align-items: flex-start; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
+.search-wrap { position: relative; flex: 0 0 220px; }
+.search-wrap input { width: 100%; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 0.5rem 0.75rem 0.5rem 2rem; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 0.9rem; outline: none; transition: border-color 0.2s; }
+.search-wrap input:focus { border-color: var(--accent); }
+.search-wrap input::placeholder { color: var(--muted); }
+.search-icon { position: absolute; left: 0.6rem; top: 50%; transform: translateY(-50%); color: var(--muted); font-size: 0.85rem; pointer-events: none; }
+
+.filter-section { display: flex; flex-direction: column; gap: 0.5rem; flex: 1; min-width: 280px; }
+.cat-pills { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+.sub-filters { display: flex; gap: 0.4rem; flex-wrap: wrap; min-height: 24px; }
+
+.pill { background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 0.35rem 0.9rem; font-size: 0.8rem; cursor: pointer; color: var(--muted); transition: all 0.15s; white-space: nowrap; user-select: none; }
+.pill:hover { border-color: var(--accent); color: var(--accent); }
+.pill.active { border-color: var(--accent); color: var(--accent); background: var(--accent-glow); }
+.pill.cat-all-active { background: var(--accent); color: #fff !important; border-color: var(--accent); }
+.pill.sub { font-size: 0.72rem; padding: 0.25rem 0.65rem; }
+.pill.sub.active { background: var(--accent); color: #fff; }
+
+.tabs { display: flex; margin-bottom: 2rem; border-bottom: 1px solid var(--border); }
+.tab { padding: 0.75rem 1.5rem; font-size: 0.95rem; cursor: pointer; color: var(--muted); border-bottom: 2px solid transparent; transition: all 0.2s; background: none; border-top: none; border-left: none; border-right: none; font-family: 'DM Sans', sans-serif; }
+.tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+.tab-count { background: var(--surface2); border-radius: 999px; padding: 0 0.45rem; font-size: 0.7rem; margin-left: 0.4rem; color: var(--muted); }
+
+/* GRID + CARDS */
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(155px, 1fr)); gap: 1rem; }
+
+.card-wrap { position: relative; }
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; cursor: pointer; transition: transform 0.15s, border-color 0.15s, box-shadow 0.15s; position: relative; height: 100%; }
+.card:hover { transform: translateY(-3px); border-color: var(--accent); box-shadow: 0 8px 24px rgba(192,57,43,0.15); }
+.card-poster { width: 100%; aspect-ratio: 2/3; object-fit: cover; background: var(--surface2); display: block; }
+.card-poster-ph { width: 100%; aspect-ratio: 2/3; background: var(--surface2); display: flex; align-items: center; justify-content: center; font-size: 2.2rem; flex-direction: column; gap: 0.4rem; }
+.card-poster-ph span { font-size: 0.65rem; color: var(--muted); font-family: 'Space Mono', monospace; }
+.card-body { padding: 0.55rem 0.65rem 0.65rem; }
+.card-title { font-size: 0.8rem; font-weight: 600; color: var(--text); line-height: 1.3; margin-bottom: 0.3rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.card-meta { display: flex; align-items: center; gap: 0.3rem; flex-wrap: wrap; }
+.cat-badge { font-size: 0.58rem; padding: 0.1rem 0.4rem; border-radius: 999px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.4px; white-space: nowrap; }
+.cat-film  { background: rgba(59,130,246,0.15); color: #60a5fa; }
+.cat-serie { background: rgba(236,72,153,0.15); color: #f472b6; }
+.cat-spiel { background: rgba(34,197,94,0.15); color: #4ade80; }
+.cat-buch  { background: rgba(245,158,11,0.15); color: #fbbf24; }
+.status-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+.dot-done { background: var(--green); }
+.dot-planned { background: var(--border); }
+.card-done-overlay { position: absolute; top: 0.4rem; right: 0.4rem; background: rgba(34,197,94,0.9); border-radius: 50%; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; font-size: 0.6rem; }
+.roblox-badge { position: absolute; top: 0.4rem; left: 0.4rem; background: rgba(0,162,255,0.85); border-radius: 4px; padding: 0.1rem 0.35rem; font-size: 0.58rem; font-weight: 700; color: #fff; letter-spacing: 0.3px; }
+
+/* HOVER PREVIEW */
+.hover-preview { position: absolute; z-index: 50; width: 240px; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; box-shadow: 0 16px 40px rgba(0,0,0,0.7); padding: 0; overflow: hidden; pointer-events: none; opacity: 0; transition: opacity 0.15s; }
+.hover-preview.visible { opacity: 1; pointer-events: auto; }
+.hover-preview-img { width: 100%; height: 130px; object-fit: cover; background: var(--surface2); display: block; }
+.hover-preview-img-ph { width: 100%; height: 80px; background: var(--surface2); display: flex; align-items: center; justify-content: center; font-size: 2rem; }
+.hover-preview-body { padding: 0.75rem; }
+.hover-preview-title { font-size: 0.88rem; font-weight: 700; margin-bottom: 0.3rem; line-height: 1.3; }
+.hover-preview-desc { font-size: 0.75rem; color: var(--muted); line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; }
+.hover-preview-rating { font-size: 0.72rem; color: var(--amber); margin-top: 0.4rem; }
+.hover-preview-tags { display: flex; gap: 0.3rem; flex-wrap: wrap; margin-top: 0.4rem; }
+.hover-preview-tag { font-size: 0.62rem; background: var(--surface2); border-radius: 4px; padding: 0.1rem 0.35rem; color: var(--muted); }
+
+.empty { text-align: center; padding: 4rem 2rem; color: var(--muted); }
+.empty-icon { font-size: 3rem; margin-bottom: 1rem; }
+.empty h3 { font-size: 1.1rem; margin-bottom: 0.5rem; color: var(--text); }
+
+.suggestions-banner { background: var(--accent-glow); border: 1px solid rgba(192,57,43,0.35); border-radius: 10px; padding: 0.75rem 1.25rem; margin-bottom: 1.5rem; display: none; align-items: center; justify-content: space-between; gap: 1rem; }
+.suggestions-banner.visible { display: flex; }
+.suggestions-banner p { font-size: 0.9rem; }
+.suggestions-banner p span { color: var(--accent); font-weight: 600; }
+.review-btn { background: var(--accent); border: none; color: #fff; padding: 0.35rem 0.9rem; border-radius: 7px; cursor: pointer; font-family: 'DM Sans', sans-serif; font-size: 0.8rem; font-weight: 600; white-space: nowrap; }
+
+/* MODALS */
+.overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.75); z-index: 200; display: none; align-items: center; justify-content: center; padding: 1rem; }
+.overlay.open { display: flex; }
+.modal { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; width: 100%; max-width: 500px; max-height: 90vh; overflow-y: auto; padding: 1.75rem; position: relative; }
+.modal h2 { font-family: 'Space Mono', monospace; font-size: 1rem; color: var(--accent); margin-bottom: 1.5rem; }
+.modal-close { position: absolute; top: 1rem; right: 1rem; background: none; border: none; color: var(--muted); cursor: pointer; font-size: 1.3rem; line-height: 1; }
+.modal-close:hover { color: var(--text); }
+
+.form-group { margin-bottom: 1.1rem; }
+label { display: block; font-size: 0.78rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.4rem; }
+input[type=text], input[type=url], select, textarea { width: 100%; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 0.6rem 0.8rem; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 0.9rem; outline: none; transition: border-color 0.2s; }
+input:focus, select:focus, textarea:focus { border-color: var(--accent); }
+select option { background: var(--surface2); }
+textarea { resize: vertical; min-height: 70px; }
+
+.cat-select-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.5rem; }
+.cat-opt { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 0.6rem; text-align: center; cursor: pointer; transition: all 0.15s; }
+.cat-opt:hover, .cat-opt.selected { border-color: var(--accent); background: var(--accent-glow); }
+.cat-opt .cat-emoji { font-size: 1.4rem; display: block; margin-bottom: 0.2rem; }
+.cat-opt .cat-label { font-size: 0.7rem; color: var(--muted); }
+.cat-opt.selected .cat-label { color: var(--accent); }
+
+.extra-fields-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+.auto-hint { font-size: 0.72rem; color: var(--green); margin-top: 0.3rem; display: none; }
+.auto-hint.visible { display: block; }
+
+.form-actions { display: flex; gap: 0.75rem; margin-top: 1.5rem; }
+.btn-primary { flex: 1; background: var(--accent); border: none; color: #fff; padding: 0.7rem; border-radius: 8px; cursor: pointer; font-family: 'DM Sans', sans-serif; font-weight: 600; font-size: 0.95rem; transition: background 0.2s; }
+.btn-primary:hover { background: var(--accent2); }
+.btn-secondary { flex: 1; background: none; border: 1px solid var(--border); color: var(--muted); padding: 0.7rem; border-radius: 8px; cursor: pointer; font-family: 'DM Sans', sans-serif; font-size: 0.95rem; }
+.btn-danger { background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3); color: var(--red); padding: 0.5rem 1rem; border-radius: 8px; cursor: pointer; font-size: 0.85rem; font-family: 'DM Sans', sans-serif; }
+.btn-danger:hover { background: rgba(239,68,68,0.2); }
+
+/* SEARCH DROPDOWN */
+.api-search-results { margin-top: 0.4rem; max-height: 250px; overflow-y: auto; border: 1px solid var(--border); border-radius: 8px; background: var(--surface2); display: none; }
+.api-result { display: flex; align-items: center; gap: 0.75rem; padding: 0.55rem 0.75rem; cursor: pointer; border-bottom: 1px solid var(--border); transition: background 0.1s; }
+.api-result:last-child { border-bottom: none; }
+.api-result:hover { background: var(--accent-glow); }
+.api-result img { width: 32px; height: 48px; object-fit: cover; border-radius: 3px; background: var(--border); flex-shrink: 0; }
+.api-result-ph { width: 32px; height: 48px; background: var(--border); border-radius: 3px; display: flex; align-items: center; justify-content: center; font-size: 1rem; flex-shrink: 0; }
+.api-result-info { flex: 1; min-width: 0; }
+.api-result-title { font-size: 0.83rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.api-result-sub { font-size: 0.72rem; color: var(--muted); }
+.api-searching { padding: 0.7rem; text-align: center; color: var(--muted); font-size: 0.8rem; font-family: 'Space Mono', monospace; }
+
+/* DETAIL MODAL */
+.detail-poster { width: 110px; height: 165px; object-fit: cover; border-radius: 8px; flex-shrink: 0; background: var(--surface2); }
+.detail-poster-ph { width: 110px; height: 165px; background: var(--surface2); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 2.8rem; flex-shrink: 0; }
+.detail-header { display: flex; gap: 1.25rem; margin-bottom: 1.25rem; }
+.detail-info { flex: 1; min-width: 0; padding-top: 0.2rem; }
+.detail-badges { display: flex; gap: 0.4rem; margin-bottom: 0.5rem; flex-wrap: wrap; align-items: center; }
+.detail-title { font-family: 'Space Mono', monospace; font-size: 1rem; line-height: 1.35; margin-bottom: 0.4rem; }
+.detail-meta-row { font-size: 0.77rem; color: var(--muted); line-height: 1.9; }
+.detail-meta-row span { color: var(--text); }
+.detail-desc { font-size: 0.85rem; color: var(--muted); line-height: 1.6; margin: 0.75rem 0; border-left: 2px solid var(--accent); padding-left: 0.75rem; }
+.detail-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 1rem; }
+.btn-toggle { background: rgba(34,197,94,0.1); border: 1px solid rgba(34,197,94,0.3); color: var(--green); padding: 0.45rem 0.9rem; border-radius: 8px; cursor: pointer; font-size: 0.82rem; font-family: 'DM Sans', sans-serif; }
+.btn-toggle.undo { background: rgba(245,158,11,0.1); border-color: rgba(245,158,11,0.3); color: var(--amber); }
+.btn-edit { background: var(--accent-glow); border: 1px solid rgba(192,57,43,0.35); color: var(--accent); padding: 0.45rem 0.9rem; border-radius: 8px; cursor: pointer; font-size: 0.82rem; font-family: 'DM Sans', sans-serif; }
+
+/* SUGGEST */
+.suggest-info { background: var(--surface2); border-radius: 8px; padding: 0.75rem 1rem; font-size: 0.85rem; color: var(--muted); line-height: 1.5; margin-bottom: 1.25rem; }
+.suggest-info strong { color: var(--text); }
+
+/* REVIEW */
+.suggestion-item { background: var(--surface2); border-radius: 8px; padding: 0.75rem 1rem; margin-bottom: 0.75rem; }
+.suggestion-item h4 { font-size: 0.93rem; margin-bottom: 0.15rem; }
+.suggestion-item p { font-size: 0.78rem; color: var(--muted); margin-bottom: 0.5rem; }
+.suggestion-actions { display: flex; gap: 0.5rem; }
+.btn-accept { background: rgba(34,197,94,0.1); border: 1px solid rgba(34,197,94,0.3); color: var(--green); padding: 0.3rem 0.75rem; border-radius: 6px; cursor: pointer; font-size: 0.8rem; font-family: 'DM Sans', sans-serif; }
+.btn-decline { background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3); color: var(--red); padding: 0.3rem 0.75rem; border-radius: 6px; cursor: pointer; font-size: 0.8rem; font-family: 'DM Sans', sans-serif; }
+
+/* REVIEW PREFILL MODAL */
+.prefill-preview { display: flex; gap: 1rem; margin-bottom: 1.25rem; }
+.prefill-poster { width: 70px; height: 105px; object-fit: cover; border-radius: 6px; background: var(--surface2); flex-shrink: 0; }
+.prefill-poster-ph { width: 70px; height: 105px; background: var(--surface2); border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 2rem; flex-shrink: 0; }
+.prefill-info { flex: 1; }
+.prefill-info h3 { font-size: 0.95rem; margin-bottom: 0.3rem; }
+.prefill-info p { font-size: 0.78rem; color: var(--muted); line-height: 1.5; }
+
+.loading { text-align: center; padding: 3rem; color: var(--muted); font-family: 'Space Mono', monospace; font-size: 0.85rem; }
+.loading::after { content: ''; animation: dots 1.5s infinite; }
+@keyframes dots { 0%{content:'.'} 33%{content:'..'} 66%{content:'...'} }
+
+.setup-hint { background: rgba(245,158,11,0.08); border: 1px solid rgba(245,158,11,0.25); border-radius: 10px; padding: 1rem 1.25rem; margin-bottom: 1.5rem; display: none; }
+.setup-hint.visible { display: block; }
+.setup-hint p { font-size: 0.85rem; color: var(--amber); line-height: 1.6; }
+.setup-hint code { background: rgba(245,158,11,0.15); padding: 0.1rem 0.35rem; border-radius: 4px; font-family: 'Space Mono', monospace; font-size: 0.75rem; }
+
+footer { border-top: 1px solid var(--border); padding: 1rem 2rem; display: flex; align-items: center; justify-content: center; gap: 0.5rem; color: var(--muted); font-size: 0.72rem; flex-shrink: 0; margin-top: auto; }
+footer img { height: 16px; opacity: 0.55; vertical-align: middle; }
+
+@media (max-width: 600px) {
+  nav { padding: 0.75rem 1rem; }
+  main { padding: 1rem; }
+  .grid { grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 0.75rem; }
+  .tabs { overflow-x: auto; }
+  .detail-header { flex-direction: column; }
+  .detail-poster, .detail-poster-ph { width: 100%; height: 180px; object-fit: cover; }
+  .search-wrap { flex: 1; }
+}
+</style>
+</head>
+<body>
+
+<script>
+const FIREBASE_CONFIG = {
+  apiKey:            "AIzaSyDLoXTZcVKHCDoOn8wG7wYPDCZztXISmrE",
+  authDomain:        "list-6478a.firebaseapp.com",
+  projectId:         "list-6478a",
+  storageBucket:     "list-6478a.firebasestorage.app",
+  messagingSenderId: "1089484024582",
+  appId:             "1:1089484024582:web:7da5a3643802f54f6f0c87"
+};
+const OWNER_EMAIL   = "echtesmensch@gmail.com";
+const TMDB_KEY      = "acb35f47b8d045e30ac681cc35105292";
+const RAWG_KEY      = "5ddefe45b8e04c74aed417f8fa88cf0d";
+const TMDB_IMG_W300 = "https://image.tmdb.org/t/p/w300";
+const TMDB_IMG_W780 = "https://image.tmdb.org/t/p/w780";
+</script>
+
+<nav>
+  <div class="nav-logo">// <span>echtlist</span></div>
+  <div class="nav-right">
+    <button class="nav-btn" onclick="openModal('suggestModal')">+ Vorschlag</button>
+    <button id="addBtn" onclick="openAddModal()">+ Eintrag</button>
+    <button id="loginBtn" class="nav-btn" onclick="handleLogin()">Login</button>
+  </div>
+</nav>
+
+<main>
+  <div id="setupHint" class="setup-hint">
+    <p>⚠️ <strong>Firebase noch nicht konfiguriert.</strong> Schau in die README.md.</p>
+  </div>
+
+  <div id="suggestionsBanner" class="suggestions-banner">
+    <p>📬 <span id="suggBannerText">0 neue Vorschläge</span> warten</p>
+    <button class="review-btn" onclick="openModal('reviewModal')">Anschauen</button>
+  </div>
+
+  <div class="filterbar">
+    <div class="search-wrap">
+      <span class="search-icon">🔍</span>
+      <input type="text" id="searchInput" placeholder="Suchen..." oninput="renderGrid()"/>
+    </div>
+    <div class="filter-section">
+      <div class="cat-pills">
+        <span class="pill cat-all-active" data-cat="all" onclick="setCat('all',this)">Alle</span>
+        <span class="pill" data-cat="film" onclick="setCat('film',this)">🎬 Filme</span>
+        <span class="pill" data-cat="serie" onclick="setCat('serie',this)">📺 Serien</span>
+        <span class="pill" data-cat="spiel" onclick="setCat('spiel',this)">🎮 Spiele</span>
+        <span class="pill" data-cat="buch" onclick="setCat('buch',this)">📚 Bücher</span>
+      </div>
+      <div class="sub-filters" id="subFilters"></div>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" onclick="setTab('planned',this)">📋 Geplant <span class="tab-count" id="countPlanned">0</span></button>
+    <button class="tab" onclick="setTab('done',this)">✅ Erledigt <span class="tab-count" id="countDone">0</span></button>
+  </div>
+
+  <div id="gridContainer"><div class="loading">Laden</div></div>
+</main>
+
+<footer>
+  <span>Filme & Serien-Daten:</span>
+  <img src="https://i.ibb.co/KjQgtVSJ/TMDBlogo1.png" alt="TMDB"/>
+  <span style="margin-left:0.5rem">Spiele-Daten: RAWG</span>
+  <span style="margin-left:0.5rem">Bücher: Google Books</span>
+</footer>
+
+<!-- ADD/EDIT MODAL -->
+<div class="overlay" id="addModal" onclick="overlayClose(event,'addModal')">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('addModal')">✕</button>
+    <h2 id="addModalTitle">// neuer eintrag</h2>
+    <div class="form-group">
+      <label>Kategorie</label>
+      <div class="cat-select-grid">
+        <div class="cat-opt selected" data-val="film"  onclick="selectCatAdd(this)"><span class="cat-emoji">🎬</span><span class="cat-label">Film</span></div>
+        <div class="cat-opt"          data-val="serie" onclick="selectCatAdd(this)"><span class="cat-emoji">📺</span><span class="cat-label">Serie</span></div>
+        <div class="cat-opt"          data-val="spiel" onclick="selectCatAdd(this)"><span class="cat-emoji">🎮</span><span class="cat-label">Spiel</span></div>
+        <div class="cat-opt"          data-val="buch"  onclick="selectCatAdd(this)"><span class="cat-emoji">📚</span><span class="cat-label">Buch</span></div>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Titel *</label>
+      <input type="text" id="entryTitle" placeholder="Titel eingeben..." oninput="onTitleInput()"/>
+      <div class="api-search-results" id="apiResults"></div>
+      <div class="auto-hint" id="autoHint">✓ Daten automatisch aus API geholt</div>
+    </div>
+    <div class="form-group">
+      <label>Cover-URL</label>
+      <input type="url" id="entryCover" placeholder="Wird automatisch gefüllt oder manuell eingeben"/>
+    </div>
+    <div class="form-group">
+      <label>Notiz (optional)</label>
+      <textarea id="entryNote" placeholder="Kurze Notiz, Empfehlung, ..."></textarea>
+    </div>
+    <div class="form-group">
+      <label>Status</label>
+      <select id="entryStatus">
+        <option value="planned">📋 Geplant</option>
+        <option value="done">✅ Erledigt</option>
+      </select>
+    </div>
+    <div id="extraFields"></div>
+    <div class="form-actions">
+      <button class="btn-secondary" onclick="closeModal('addModal')">Abbrechen</button>
+      <button class="btn-primary" onclick="saveEntry()">Speichern</button>
+    </div>
+  </div>
+</div>
+
+<!-- DETAIL MODAL -->
+<div class="overlay" id="detailModal" onclick="overlayClose(event,'detailModal')">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('detailModal')">✕</button>
+    <div id="detailContent"></div>
+  </div>
+</div>
+
+<!-- SUGGEST MODAL -->
+<div class="overlay" id="suggestModal" onclick="overlayClose(event,'suggestModal')">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('suggestModal')">✕</button>
+    <h2>// vorschlag einreichen</h2>
+    <div class="suggest-info">Dein Vorschlag landet als <strong>Entwurf</strong> – kein Login nötig!</div>
+    <div class="form-group">
+      <label>Dein Name (optional)</label>
+      <input type="text" id="suggName" placeholder="Von wem?"/>
+    </div>
+    <div class="form-group">
+      <label>Kategorie</label>
+      <div class="cat-select-grid">
+        <div class="cat-opt selected" data-val="film"  onclick="selectCatSuggest(this)"><span class="cat-emoji">🎬</span><span class="cat-label">Film</span></div>
+        <div class="cat-opt"          data-val="serie" onclick="selectCatSuggest(this)"><span class="cat-emoji">📺</span><span class="cat-label">Serie</span></div>
+        <div class="cat-opt"          data-val="spiel" onclick="selectCatSuggest(this)"><span class="cat-emoji">🎮</span><span class="cat-label">Spiel</span></div>
+        <div class="cat-opt"          data-val="buch"  onclick="selectCatSuggest(this)"><span class="cat-emoji">📚</span><span class="cat-label">Buch</span></div>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Titel *</label>
+      <input type="text" id="suggTitle" placeholder="z.B. Breaking Bad"/>
+    </div>
+    <div class="form-group">
+      <label>Nachricht (optional)</label>
+      <textarea id="suggNote" placeholder="Warum empfiehlst du das?"></textarea>
+    </div>
+    <div class="form-actions">
+      <button class="btn-secondary" onclick="closeModal('suggestModal')">Abbrechen</button>
+      <button class="btn-primary" onclick="submitSuggestion()">Senden</button>
+    </div>
+  </div>
+</div>
+
+<!-- REVIEW MODAL -->
+<div class="overlay" id="reviewModal" onclick="overlayClose(event,'reviewModal')">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('reviewModal')">✕</button>
+    <h2>// vorschläge</h2>
+    <div id="reviewList"></div>
+  </div>
+</div>
+
+<!-- PREFILL REVIEW MODAL -->
+<div class="overlay" id="prefillModal" onclick="overlayClose(event,'prefillModal')">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('prefillModal')">✕</button>
+    <h2>// vorschlag annehmen</h2>
+    <div id="prefillContent"></div>
+  </div>
+</div>
+
+<div id="hoverPreview" class="hover-preview"></div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+<script>
+/* ═══════ STATE ═══════ */
+let db, auth, currentUser = null;
+let entries = [], suggestions = [];
+let currentCat = 'all', currentTab = 'planned';
+let editingId = null, selectedCatAdd = 'film', selectedCatSuggest = 'film';
+let firebaseReady = false;
+let activeSubFilters = {};   // { film: { genre: Set, laufzeit: Set }, ... }
+let apiTimer = null;
+let hoverTimer = null;
+let prefillSuggId = null;
+
+const catEmoji = { film:'🎬', serie:'📺', spiel:'🎮', buch:'📚' };
+const catLabel = { film:'Film', serie:'Serie', spiel:'Spiel', buch:'Buch' };
+
+const SUB_FILTER_DEFS = {
+  film:  [
+    { key:'genre',    opts:['Action','Drama','Komödie','Horror','Sci-Fi','Thriller','Animation','Doku'] },
+    { key:'laufzeit', opts:['< 90 Min','90–120 Min','> 120 Min'] }
+  ],
+  serie: [
+    { key:'genre',       opts:['Drama','Komödie','Krimi','Sci-Fi','Horror','Animation','Doku','Reality'] },
+    { key:'serieStatus', opts:['Laufend','Abgeschlossen','Abgebrochen'] }
+  ],
+  spiel: [
+    { key:'genre',  opts:['RPG','Action','Horror','Puzzle','Strategie','Simulation','Sport','Indie'] },
+    { key:'modus',  opts:['Singleplayer','Multiplayer','Co-op','MMO','Roblox'] }
+  ],
+  buch:  [
+    { key:'genre',  opts:['Roman','Krimi','Fantasy','Sci-Fi','Sachbuch','Biografie','Horror','Comic'] },
+    { key:'laenge', opts:['< 200 S.','200–400 S.','> 400 S.'] }
+  ]
+};
+
+/* ═══════ INIT ═══════ */
+function initApp() {
+  if (!FIREBASE_CONFIG.apiKey || FIREBASE_CONFIG.apiKey === 'DEIN_API_KEY') {
+    document.getElementById('setupHint').classList.add('visible');
+    document.getElementById('gridContainer').innerHTML = `<div class="empty"><div class="empty-icon">⚙️</div><h3>Firebase konfigurieren</h3></div>`;
+    return;
+  }
+  try {
+    firebase.initializeApp(FIREBASE_CONFIG);
+    db = firebase.firestore();
+    auth = firebase.auth();
+    firebaseReady = true;
+    auth.onAuthStateChanged(u => {
+      currentUser = u;
+      const isOwner = u && u.email === OWNER_EMAIL;
+      document.getElementById('loginBtn').textContent = u ? 'Logout' : 'Login';
+      document.getElementById('loginBtn').className = u ? 'nav-btn logged-in' : 'nav-btn';
+      document.getElementById('addBtn').style.display = isOwner ? 'block' : 'none';
+      if (isOwner) loadSuggestions();
+    });
+    loadEntries();
+  } catch(e) {
+    document.getElementById('gridContainer').innerHTML = `<div class="empty"><div class="empty-icon">❌</div><h3>${e.message}</h3></div>`;
+  }
+}
+
+function loadEntries() {
+  db.collection('entries').orderBy('createdAt','desc').onSnapshot(snap => {
+    entries = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    renderGrid(); updateCounts();
+  });
+}
+
+function loadSuggestions() {
+  db.collection('suggestions').where('status','==','pending').onSnapshot(snap => {
+    suggestions = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    const n = suggestions.length;
+    document.getElementById('suggBannerText').textContent =
+      n === 1 ? '1 neuer Vorschlag' : `${n} neue Vorschläge`;
+    document.getElementById('suggestionsBanner').classList.toggle('visible', n > 0);
+  });
+}
+
+/* ═══════ RENDER GRID ═══════ */
+function renderGrid() {
+  const q = document.getElementById('searchInput').value.toLowerCase();
+  const af = activeSubFilters[currentCat] || {};
+  const filtered = entries.filter(e => {
+    if (currentCat !== 'all' && e.category !== currentCat) return false;
+    if (e.status !== currentTab) return false;
+    if (q && !e.title.toLowerCase().includes(q)) return false;
+    for (const [key, valSet] of Object.entries(af)) {
+      if (valSet.size > 0 && !valSet.has(e[key])) return false;
+    }
+    return true;
+  });
+  const container = document.getElementById('gridContainer');
+  if (!filtered.length) {
+    container.innerHTML = `<div class="empty"><div class="empty-icon">${currentTab==='planned'?'📋':'✅'}</div><h3>${currentTab==='planned'?'Noch nichts geplant':'Noch nichts erledigt'}</h3><p style="color:var(--muted);font-size:0.9rem;margin-top:0.5rem;">Füge deinen ersten Eintrag hinzu!</p></div>`;
+    return;
+  }
+  container.innerHTML = `<div class="grid">${filtered.map(cardHTML).join('')}</div>`;
+}
+
+function cardHTML(e) {
+  const hasCover = e.cover && e.cover.length > 4;
+  const img  = hasCover ? `<img class="card-poster" src="${esc(e.cover)}" alt="${esc(e.title)}" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">` : '';
+  const ph   = `<div class="card-poster-ph" ${hasCover?'style="display:none"':''}>${catEmoji[e.category]||'📌'}<span>${catLabel[e.category]||''}</span></div>`;
+  const done = e.status==='done' ? `<div class="card-done-overlay">✓</div>` : '';
+  const rob  = e.modus==='Roblox' ? `<div class="roblox-badge">ROBLOX</div>` : '';
+  const tag  = e.genre ? `<span style="font-size:0.6rem;color:var(--muted)">${esc(e.genre)}</span>` : '';
+  const hd   = encodeURIComponent(JSON.stringify({ id: e.id }));
+  return `<div class="card-wrap">
+    <div class="card" onclick="openDetail('${e.id}')"
+      onmouseenter="schedulePreview(event,'${e.id}')"
+      onmouseleave="cancelPreview()">
+      ${done}${rob}${img}${ph}
+      <div class="card-body">
+        <div class="card-title">${esc(e.title)}</div>
+        <div class="card-meta">
+          <span class="cat-badge cat-${e.category}">${catLabel[e.category]||e.category}</span>
+          ${tag}
+          <span class="status-dot ${e.status==='done'?'dot-done':'dot-planned'}"></span>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function updateCounts() {
+  document.getElementById('countPlanned').textContent = entries.filter(e=>e.status==='planned').length;
+  document.getElementById('countDone').textContent    = entries.filter(e=>e.status==='done').length;
+}
+
+/* ═══════ FILTERS ═══════ */
+function setCat(cat, el) {
+  currentCat = cat;
+  if (!activeSubFilters[cat]) activeSubFilters[cat] = {};
+  document.querySelectorAll('.cat-pills .pill').forEach(p => {
+    p.classList.remove('active','cat-all-active');
+  });
+  if (cat === 'all') el.classList.add('cat-all-active');
+  else el.classList.add('active');
+  renderSubFilters();
+  renderGrid();
+}
+
+function setTab(status, el) {
+  currentTab = status;
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  renderGrid();
+}
+
+function renderSubFilters() {
+  const container = document.getElementById('subFilters');
+  if (currentCat === 'all' || !SUB_FILTER_DEFS[currentCat]) { container.innerHTML=''; return; }
+  const af = activeSubFilters[currentCat] || {};
+  let html = '';
+  SUB_FILTER_DEFS[currentCat].forEach(grp => {
+    grp.opts.forEach(opt => {
+      const active = af[grp.key] && af[grp.key].has(opt);
+      html += `<span class="pill sub ${active?'active':''}" onclick="toggleSubFilter('${grp.key}','${opt}',this)">${opt}</span>`;
+    });
+  });
+  container.innerHTML = html;
+}
+
+function toggleSubFilter(key, val, el) {
+  if (!activeSubFilters[currentCat]) activeSubFilters[currentCat] = {};
+  if (!activeSubFilters[currentCat][key]) activeSubFilters[currentCat][key] = new Set();
+  const s = activeSubFilters[currentCat][key];
+  if (s.has(val)) { s.delete(val); el.classList.remove('active'); }
+  else            { s.add(val);    el.classList.add('active'); }
+  renderGrid();
+}
+
+/* ═══════ HOVER PREVIEW ═══════ */
+function schedulePreview(evt, id) {
+  cancelPreview();
+  hoverTimer = setTimeout(() => showPreview(evt, id), 400);
+}
+function cancelPreview() {
+  clearTimeout(hoverTimer);
+  const p = document.getElementById('hoverPreview');
+  p.classList.remove('visible');
+}
+
+async function showPreview(evt, id) {
+  const e = entries.find(x => x.id === id);
+  if (!e) return;
+  const p = document.getElementById('hoverPreview');
+
+  // Position
+  const rect = evt.currentTarget.getBoundingClientRect();
+  const scrollY = window.scrollY;
+  let left = rect.right + 8;
+  if (left + 250 > window.innerWidth) left = rect.left - 250;
+  p.style.left = left + 'px';
+  p.style.top  = (rect.top + scrollY) + 'px';
+
+  // Basic content first
+  const hasCover = e.cover && e.cover.length > 4;
+  const coverEl = hasCover
+    ? `<img class="hover-preview-img" src="${esc(e.cover)}" alt="" onerror="this.style.display='none'">`
+    : `<div class="hover-preview-img-ph">${catEmoji[e.category]}</div>`;
+
+  p.innerHTML = `${coverEl}<div class="hover-preview-body">
+    <div class="hover-preview-title">${esc(e.title)}</div>
+    <div class="hover-preview-desc" id="hpDesc">${e.description ? esc(e.description) : '<span style="color:var(--muted);font-size:0.72rem">Lade Beschreibung…</span>'}</div>
+    ${e.rating ? `<div class="hover-preview-rating">★ ${e.rating}</div>` : ''}
+    ${[e.genre, e.modus, e.laufzeit, e.laenge].filter(Boolean).map(t=>`<span class="hover-preview-tag">${esc(t)}</span>`).join('')}
+  </div>`;
+  p.classList.add('visible');
+
+  // Fetch description if missing
+  if (!e.description) fetchDescription(e, id);
+}
+
+async function fetchDescription(e, id) {
+  let desc = '', rating = '', year = '';
+  try {
+    if (e.category === 'film') {
+      const r = await fetch(`https://api.themoviedb.org/3/search/movie?api_key=${TMDB_KEY}&query=${encodeURIComponent(e.title)}&language=de-DE`);
+      const d = await r.json();
+      const item = d.results?.[0];
+      if (item) { desc = item.overview; rating = item.vote_average?.toFixed(1); year = (item.release_date||'').slice(0,4); }
+    } else if (e.category === 'serie') {
+      const r = await fetch(`https://api.themoviedb.org/3/search/tv?api_key=${TMDB_KEY}&query=${encodeURIComponent(e.title)}&language=de-DE`);
+      const d = await r.json();
+      const item = d.results?.[0];
+      if (item) { desc = item.overview; rating = item.vote_average?.toFixed(1); year = (item.first_air_date||'').slice(0,4); }
+    } else if (e.category === 'spiel') {
+      const r = await fetch(`https://api.rawg.io/api/games?key=${RAWG_KEY}&search=${encodeURIComponent(e.title)}&page_size=1`);
+      const d = await r.json();
+      const item = d.results?.[0];
+      if (item) { desc = item.description_raw || ''; rating = item.rating?.toFixed(1); year = (item.released||'').slice(0,4); }
+    } else if (e.category === 'buch') {
+      const r = await fetch(`https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(e.title)}&maxResults=1&langRestrict=de`);
+      const d = await r.json();
+      const item = d.items?.[0]?.volumeInfo;
+      if (item) { desc = item.description || ''; rating = item.averageRating?.toFixed(1); year = (item.publishedDate||'').slice(0,4); }
+    }
+    if (desc) {
+      // Cache in firestore silently
+      db.collection('entries').doc(id).update({ description: desc, rating: rating||'', tmdbYear: year }).catch(()=>{});
+      const el = document.getElementById('hpDesc');
+      if (el) el.textContent = desc;
+    }
+  } catch(err) {}
+}
+
+/* ═══════ DETAIL ═══════ */
+function openDetail(id) {
+  const e = entries.find(x => x.id === id);
+  if (!e) return;
+  const isOwner = currentUser && currentUser.email === OWNER_EMAIL;
+  const hasCover = e.cover && e.cover.length > 4;
+  const posterEl = hasCover
+    ? `<img class="detail-poster" src="${esc(e.cover)}" alt="" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"/><div class="detail-poster-ph" style="display:none">${catEmoji[e.category]}</div>`
+    : `<div class="detail-poster-ph">${catEmoji[e.category]}</div>`;
+  const metaItems = [
+    e.genre        ? `Genre: <span>${esc(e.genre)}</span>` : '',
+    e.laufzeit     ? `Laufzeit: <span>${esc(e.laufzeit)}</span>` : '',
+    e.modus        ? `Modus: <span>${esc(e.modus)}</span>` : '',
+    e.laenge       ? `Länge: <span>${esc(e.laenge)}</span>` : '',
+    e.serieStatus  ? `Serie: <span>${esc(e.serieStatus)}</span>` : '',
+    e.rating       ? `Bewertung: <span>★ ${esc(e.rating)}</span>` : '',
+    e.tmdbYear     ? `Jahr: <span>${esc(e.tmdbYear)}</span>` : '',
+    e.addedBy      ? `Vorgeschlagen von: <span>${esc(e.addedBy)}</span>` : ''
+  ].filter(Boolean).join(' &nbsp;·&nbsp; ');
+  const ownerBtns = isOwner ? `
+    <button class="btn-toggle ${e.status==='done'?'undo':''}" onclick="toggleStatus('${e.id}','${e.status}')">
+      ${e.status==='done'?'↩ Zurück zu Geplant':'✅ Als erledigt markieren'}
+    </button>
+    <button class="btn-edit" onclick="closeModal('detailModal');openEditModal('${e.id}')">✏️ Bearbeiten</button>
+    <button class="btn-danger" onclick="deleteEntry('${e.id}')">🗑</button>` : '';
+
+  document.getElementById('detailContent').innerHTML = `
+    <div class="detail-header">
+      ${posterEl}
+      <div class="detail-info">
+        <div class="detail-badges">
+          <span class="cat-badge cat-${e.category}">${catEmoji[e.category]} ${catLabel[e.category]}</span>
+          <span style="font-size:0.75rem;color:${e.status==='done'?'var(--green)':'var(--muted)'}">
+            ${e.status==='done'?'✅ Erledigt':'📋 Geplant'}
+          </span>
+          ${e.modus==='Roblox'?'<span class="roblox-badge" style="position:static">ROBLOX</span>':''}
+        </div>
+        <h2 class="detail-title">${esc(e.title)}</h2>
+        ${metaItems ? `<div class="detail-meta-row">${metaItems}</div>` : ''}
+      </div>
+    </div>
+    ${e.description ? `<div class="detail-desc">${esc(e.description).slice(0,300)}${e.description.length>300?'…':''}</div>` : ''}
+    ${e.note ? `<div class="detail-desc" style="border-color:var(--muted)">${esc(e.note)}</div>` : ''}
+    <div class="detail-actions">${ownerBtns}</div>`;
+  openModal('detailModal');
+}
+
+async function toggleStatus(id, current) {
+  if (!firebaseReady) return;
+  await db.collection('entries').doc(id).update({ status: current==='done'?'planned':'done' });
+  closeModal('detailModal');
+}
+async function deleteEntry(id) {
+  if (!confirm('Wirklich löschen?')) return;
+  await db.collection('entries').doc(id).delete();
+  closeModal('detailModal');
+}
+
+/* ═══════ ADD / EDIT ═══════ */
+function openAddModal() {
+  editingId = null; selectedCatAdd = 'film';
+  document.getElementById('addModalTitle').textContent = '// neuer eintrag';
+  document.getElementById('entryTitle').value = '';
+  document.getElementById('entryCover').value = '';
+  document.getElementById('entryNote').value = '';
+  document.getElementById('entryStatus').value = 'planned';
+  document.getElementById('autoHint').classList.remove('visible');
+  document.getElementById('apiResults').style.display = 'none';
+  document.getElementById('apiResults').innerHTML = '';
+  document.querySelectorAll('#addModal .cat-opt').forEach(o => o.classList.toggle('selected', o.dataset.val==='film'));
+  renderExtraFields('film', {});
+  openModal('addModal');
+}
+
+function openEditModal(id) {
+  const e = entries.find(x => x.id === id);
+  if (!e) return;
+  editingId = id; selectedCatAdd = e.category;
+  document.getElementById('addModalTitle').textContent = '// bearbeiten';
+  document.getElementById('entryTitle').value = e.title;
+  document.getElementById('entryCover').value = e.cover||'';
+  document.getElementById('entryNote').value = e.note||'';
+  document.getElementById('entryStatus').value = e.status;
+  document.getElementById('autoHint').classList.remove('visible');
+  document.getElementById('apiResults').style.display = 'none';
+  document.querySelectorAll('#addModal .cat-opt').forEach(o => o.classList.toggle('selected', o.dataset.val===e.category));
+  renderExtraFields(e.category, e);
+  openModal('addModal');
+}
+
+const EXTRA_DEFS = {
+  film:  [
+    { id:'xGenre',    label:'Genre',    type:'select', opts:['','Action','Drama','Komödie','Horror','Sci-Fi','Thriller','Animation','Doku'] },
+    { id:'xLaufzeit', label:'Laufzeit', type:'select', opts:['','< 90 Min','90–120 Min','> 120 Min'] }
+  ],
+  serie: [
+    { id:'xGenre',  label:'Genre',         type:'select', opts:['','Drama','Komödie','Krimi','Sci-Fi','Horror','Animation','Doku','Reality'] },
+    { id:'xSStatus',label:'Serienstatus',  type:'select', opts:['','Laufend','Abgeschlossen','Abgebrochen'] }
+  ],
+  spiel: [
+    { id:'xGenre', label:'Genre',      type:'select', opts:['','RPG','Action','Horror','Puzzle','Strategie','Simulation','Sport','Indie'] },
+    { id:'xModus', label:'Spielmodus', type:'select', opts:['','Singleplayer','Multiplayer','Co-op','MMO','Roblox'] }
+  ],
+  buch:  [
+    { id:'xGenre',  label:'Genre',  type:'select', opts:['','Roman','Krimi','Fantasy','Sci-Fi','Sachbuch','Biografie','Horror','Comic'] },
+    { id:'xLaenge', label:'Länge',  type:'select', opts:['','< 200 S.','200–400 S.','> 400 S.'] }
+  ]
+};
+
+function renderExtraFields(cat, vals) {
+  const defs = EXTRA_DEFS[cat] || [];
+  const pairs = [];
+  for (let i = 0; i < defs.length; i += 2) {
+    pairs.push(defs.slice(i, i+2));
+  }
+  document.getElementById('extraFields').innerHTML = pairs.map(pair =>
+    `<div class="extra-fields-grid">${pair.map(f => {
+      const v = vals[f.id.replace('x','').toLowerCase()] || vals[f.id] || '';
+      const opts = f.opts.map(o => `<option${o===v?' selected':''}>${o}</option>`).join('');
+      return `<div class="form-group"><label>${f.label}</label><select id="${f.id}">${opts}</select></div>`;
+    }).join('')}</div>`
+  ).join('');
+}
+
+function getExtraVals(cat) {
+  const defs = EXTRA_DEFS[cat] || [];
+  const map = { film:{xGenre:'genre',xLaufzeit:'laufzeit'}, serie:{xGenre:'genre',xSStatus:'serieStatus'}, spiel:{xGenre:'genre',xModus:'modus'}, buch:{xGenre:'genre',xLaenge:'laenge'} };
+  const result = {};
+  defs.forEach(f => {
+    const el = document.getElementById(f.id);
+    if (el) result[map[cat]?.[f.id] || f.id] = el.value;
+  });
+  return result;
+}
+
+async function saveEntry() {
+  const title = document.getElementById('entryTitle').value.trim();
+  if (!title) { alert('Bitte einen Titel eingeben.'); return; }
+  const extra = getExtraVals(selectedCatAdd);
+  const data = {
+    title,
+    category: selectedCatAdd,
+    cover:    document.getElementById('entryCover').value.trim(),
+    note:     document.getElementById('entryNote').value.trim(),
+    status:   document.getElementById('entryStatus').value,
+    ...extra
+  };
+  if (!firebaseReady) return;
+  if (editingId) {
+    await db.collection('entries').doc(editingId).update(data);
+  } else {
+    data.createdAt = firebase.firestore.FieldValue.serverTimestamp();
+    await db.collection('entries').add(data);
+  }
+  closeModal('addModal');
+}
+
+function selectCatAdd(el) {
+  document.querySelectorAll('#addModal .cat-opt').forEach(o => o.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedCatAdd = el.dataset.val;
+  renderExtraFields(selectedCatAdd, {});
+  document.getElementById('apiResults').style.display = 'none';
+  document.getElementById('autoHint').classList.remove('visible');
+  const t = document.getElementById('entryTitle').value.trim();
+  if (t.length > 1) doApiSearch(t);
+}
+
+function onTitleInput() {
+  clearTimeout(apiTimer);
+  const t = document.getElementById('entryTitle').value.trim();
+  if (t.length < 2) { document.getElementById('apiResults').style.display='none'; return; }
+  apiTimer = setTimeout(() => doApiSearch(t), 500);
+}
+
+async function doApiSearch(q) {
+  const cat = selectedCatAdd;
+  const box = document.getElementById('apiResults');
+  box.style.display = 'block';
+  box.innerHTML = '<div class="api-searching">Suche…</div>';
+  try {
+    const results = await fetchApiResults(cat, q);
+    if (!results.length) { box.innerHTML='<div class="api-searching">Kein Ergebnis</div>'; return; }
+    box.innerHTML = results.slice(0,6).map(r =>
+      `<div class="api-result" onclick='applyApiResult(${JSON.stringify(r)})'>
+        ${r.poster ? `<img src="${esc(r.poster)}" alt="" onerror="this.style.opacity=0">` : `<div class="api-result-ph">${catEmoji[cat]}</div>`}
+        <div class="api-result-info">
+          <div class="api-result-title">${esc(r.title)}</div>
+          <div class="api-result-sub">${[r.year, r.genre, r.modus].filter(Boolean).join(' · ')}</div>
+        </div>
+      </div>`
+    ).join('');
+  } catch(e) { box.innerHTML='<div class="api-searching">Fehler</div>'; }
+}
+
+async function fetchApiResults(cat, q) {
+  if (cat === 'film') {
+    const r = await fetch(`https://api.themoviedb.org/3/search/movie?api_key=${TMDB_KEY}&query=${encodeURIComponent(q)}&language=de-DE`);
+    const d = await r.json();
+    return (d.results||[]).map(i => ({
+      title: i.title||'',
+      poster: i.poster_path ? TMDB_IMG_W300+i.poster_path : '',
+      year: (i.release_date||'').slice(0,4),
+      genre: '', modus: '', description: i.overview||'',
+      rating: i.vote_average?.toFixed(1)||'',
+      tmdbId: i.id
+    }));
+  }
+  if (cat === 'serie') {
+    const r = await fetch(`https://api.themoviedb.org/3/search/tv?api_key=${TMDB_KEY}&query=${encodeURIComponent(q)}&language=de-DE`);
+    const d = await r.json();
+    return (d.results||[]).map(i => ({
+      title: i.name||'',
+      poster: i.poster_path ? TMDB_IMG_W300+i.poster_path : '',
+      year: (i.first_air_date||'').slice(0,4),
+      genre: '', modus: '', description: i.overview||'',
+      rating: i.vote_average?.toFixed(1)||'',
+      tmdbId: i.id
+    }));
+  }
+  if (cat === 'spiel') {
+    const r = await fetch(`https://api.rawg.io/api/games?key=${RAWG_KEY}&search=${encodeURIComponent(q)}&page_size=6`);
+    const d = await r.json();
+    return (d.results||[]).map(i => ({
+      title: i.name||'',
+      poster: i.background_image||'',
+      year: (i.released||'').slice(0,4),
+      genre: i.genres?.[0]?.name||'',
+      modus: '',
+      description: '', rating: i.rating?.toFixed(1)||'',
+      rawgId: i.id
+    }));
+  }
+  if (cat === 'buch') {
+    const r = await fetch(`https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(q)}&maxResults=6`);
+    const d = await r.json();
+    return (d.items||[]).map(i => {
+      const v = i.volumeInfo||{};
+      const pages = v.pageCount;
+      let laenge = '';
+      if (pages) laenge = pages < 200 ? '< 200 S.' : pages <= 400 ? '200–400 S.' : '> 400 S.';
+      return {
+        title: v.title||'',
+        poster: v.imageLinks?.thumbnail||'',
+        year: (v.publishedDate||'').slice(0,4),
+        genre: v.categories?.[0]||'',
+        modus: '', laenge,
+        description: v.description||'',
+        rating: v.averageRating?.toFixed(1)||''
+      };
+    });
+  }
+  return [];
+}
+
+function applyApiResult(r) {
+  document.getElementById('entryTitle').value = r.title;
+  document.getElementById('entryCover').value = r.poster||'';
+  document.getElementById('autoHint').classList.add('visible');
+  document.getElementById('apiResults').style.display = 'none';
+  // Fill extra fields
+  if (r.genre) {
+    const g = document.getElementById('xGenre');
+    if (g) { for (const o of g.options) { if (o.value === r.genre || o.text.toLowerCase() === r.genre.toLowerCase()) { g.value = o.value; break; } } }
+  }
+  if (r.laenge) {
+    const l = document.getElementById('xLaenge');
+    if (l) l.value = r.laenge;
+  }
+  // Cache description
+  window._pendingDesc = { description: r.description, rating: r.rating, tmdbYear: r.year };
+}
+
+/* ═══════ SUGGEST ═══════ */
+function selectCatSuggest(el) {
+  document.querySelectorAll('#suggestModal .cat-opt').forEach(o => o.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedCatSuggest = el.dataset.val;
+}
+
+async function submitSuggestion() {
+  const title = document.getElementById('suggTitle').value.trim();
+  if (!title) { alert('Bitte einen Titel eingeben.'); return; }
+  if (!firebaseReady) return;
+  await db.collection('suggestions').add({
+    title, category: selectedCatSuggest,
+    note: document.getElementById('suggNote').value.trim(),
+    from: document.getElementById('suggName').value.trim() || 'Anonym',
+    status: 'pending',
+    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+  });
+  closeModal('suggestModal');
+  ['suggTitle','suggNote','suggName'].forEach(id => document.getElementById(id).value='');
+  alert('✅ Vorschlag eingereicht!');
+}
+
+/* ═══════ REVIEW ═══════ */
+function openReviewModal() {
+  const list = document.getElementById('reviewList');
+  if (!suggestions.length) { list.innerHTML='<p style="color:var(--muted);font-size:0.9rem;">Keine offenen Vorschläge.</p>'; return; }
+  list.innerHTML = suggestions.map(s => `
+    <div class="suggestion-item" id="sugg-${s.id}">
+      <h4>${esc(s.title)} <span style="font-size:0.7rem;color:var(--muted)">${catEmoji[s.category]} ${catLabel[s.category]}</span></h4>
+      <p>${s.note?esc(s.note):''} <em style="color:var(--muted);font-size:0.74rem">— ${esc(s.from||'Anonym')}</em></p>
+      <div class="suggestion-actions">
+        <button class="btn-accept" onclick="startAcceptFlow('${s.id}')">✅ Annehmen</button>
+        <button class="btn-decline" onclick="declineSuggestion('${s.id}')">❌ Ablehnen</button>
+      </div>
+    </div>`).join('');
+}
+
+async function startAcceptFlow(id) {
+  const s = suggestions.find(x => x.id === id);
+  if (!s || !firebaseReady) return;
+  prefillSuggId = id;
+
+  // Fetch API data
+  let apiData = null;
+  try {
+    const results = await fetchApiResults(s.category, s.title);
+    if (results.length) apiData = results[0];
+  } catch(e) {}
+
+  const cover = apiData?.poster || '';
+  const genre = apiData?.genre || '';
+  const desc  = apiData?.description || '';
+  const rating= apiData?.rating || '';
+  const year  = apiData?.year || '';
+  const laenge= apiData?.laenge || '';
+
+  const pc = document.getElementById('prefillContent');
+  pc.innerHTML = `
+    <div class="prefill-preview">
+      ${cover ? `<img class="prefill-poster" src="${esc(cover)}" alt=""/>` : `<div class="prefill-poster-ph">${catEmoji[s.category]}</div>`}
+      <div class="prefill-info">
+        <h3>${esc(s.title)}</h3>
+        <p>${desc ? esc(desc).slice(0,150)+'…' : 'Keine Beschreibung gefunden.'}</p>
+      </div>
+    </div>
+    <div class="form-group"><label>Titel</label><input type="text" id="pfTitle" value="${esc(s.title)}"/></div>
+    <div class="form-group"><label>Cover-URL</label><input type="url" id="pfCover" value="${esc(cover)}"/></div>
+    <div class="extra-fields-grid">
+      <div class="form-group"><label>Genre</label><input type="text" id="pfGenre" value="${esc(genre)}"/></div>
+      ${s.category==='buch' ? `<div class="form-group"><label>Länge</label><input type="text" id="pfLaenge" value="${esc(laenge)}"/></div>` : ''}
+      ${s.category==='spiel' ? `<div class="form-group"><label>Spielmodus</label><select id="pfModus"><option value="">–</option><option>Singleplayer</option><option>Multiplayer</option><option>Co-op</option><option>MMO</option><option>Roblox</option></select></div>` : ''}
+    </div>
+    <div class="form-group"><label>Notiz (vom Vorschlag)</label><textarea id="pfNote">${esc(s.note||'')}</textarea></div>
+    <div class="form-actions">
+      <button class="btn-secondary" onclick="closeModal('prefillModal')">Abbrechen</button>
+      <button class="btn-primary" onclick="confirmAccept('${id}','${s.category}','${esc(s.from||'Anonym')}','${esc(desc)}','${esc(rating)}','${esc(year)}')">In Liste übernehmen</button>
+    </div>`;
+
+  closeModal('reviewModal');
+  openModal('prefillModal');
+}
+
+async function confirmAccept(id, category, from, desc, rating, year) {
+  if (!firebaseReady) return;
+  const data = {
+    title:       document.getElementById('pfTitle')?.value.trim() || '',
+    category,
+    cover:       document.getElementById('pfCover')?.value.trim() || '',
+    genre:       document.getElementById('pfGenre')?.value.trim() || '',
+    modus:       document.getElementById('pfModus')?.value || '',
+    laenge:      document.getElementById('pfLaenge')?.value || '',
+    note:        document.getElementById('pfNote')?.value.trim() || '',
+    description: desc, rating, tmdbYear: year,
+    status: 'planned', addedBy: from,
+    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+  };
+  await db.collection('entries').add(data);
+  await db.collection('suggestions').doc(id).update({ status: 'accepted' });
+  closeModal('prefillModal');
+  document.getElementById(`sugg-${id}`)?.remove();
+}
+
+async function declineSuggestion(id) {
+  if (!firebaseReady) return;
+  await db.collection('suggestions').doc(id).update({ status: 'declined' });
+  document.getElementById(`sugg-${id}`)?.remove();
+}
+
+/* ═══════ AUTH ═══════ */
+async function handleLogin() {
+  if (!firebaseReady) return;
+  if (currentUser) { await auth.signOut(); }
+  else {
+    try { await auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()); }
+    catch(e) { alert('Login fehlgeschlagen: '+e.message); }
+  }
+}
+
+/* ═══════ MODAL HELPERS ═══════ */
+function openModal(id) {
+  document.getElementById(id).classList.add('open');
+  if (id === 'reviewModal') openReviewModal();
+}
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+function overlayClose(e, id) { if (e.target === document.getElementById(id)) closeModal(id); }
+
+/* ═══════ UTILS ═══════ */
+function esc(s='') {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// Close API results when clicking outside
+document.addEventListener('click', e => {
+  const box = document.getElementById('apiResults');
+  if (box && !box.contains(e.target) && e.target.id !== 'entryTitle') {
+    box.style.display = 'none';
+  }
+  if (!document.getElementById('hoverPreview').contains(e.target)) cancelPreview();
+});
+
+initApp();
+</script>
+</body>
+</html>
