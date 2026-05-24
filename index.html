@@ -41,10 +41,10 @@ main{max-width:1400px;width:100%;margin:0 auto;padding:2rem;flex:1}
 /* FILTERBAR */
 .filterbar{display:flex;align-items:flex-start;gap:1rem;margin-bottom:1.5rem;flex-wrap:wrap}
 .search-wrap{position:relative;flex:0 0 200px}
-.search-wrap input{width:100%;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:0.5rem 0.75rem 0.5rem 1.9rem;color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.9rem;outline:none;transition:border-color 0.2s}
+.search-wrap input{width:100%;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:0.5rem 0.75rem 0.5rem 1.85rem;color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.9rem;outline:none;transition:border-color 0.2s}
 .search-wrap input:focus{border-color:var(--accent)}
 .search-wrap input::placeholder{color:var(--muted)}
-.search-icon{position:absolute;left:0.55rem;top:50%;transform:translateY(-50%);color:var(--muted);font-size:0.82rem;pointer-events:none;line-height:1}
+.search-icon{position:absolute;left:0.62rem;top:50%;transform:translateY(-50%);color:var(--muted);font-size:0.82rem;pointer-events:none;line-height:1}
 .filter-section{display:flex;flex-direction:column;gap:0.5rem;flex:1;min-width:280px}
 .cat-pills{display:flex;gap:0.5rem;flex-wrap:wrap}
 .sub-filters{display:flex;gap:0.4rem;flex-wrap:wrap;min-height:24px}
@@ -63,6 +63,9 @@ main{max-width:1400px;width:100%;margin:0 auto;padding:2rem;flex:1}
 
 /* GRID */
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(185px,1fr));gap:1.2rem}
+.grid.game-grid{grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:1.4rem}
+.game-grid .card.game-card .card-poster{aspect-ratio:16/9;height:auto}
+.game-grid .card.game-card .card-poster-ph{aspect-ratio:16/9;height:auto}
 
 /* CARD – default (Filme/Serien/Bücher) = 2:3 */
 .card{background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;cursor:pointer;transition:transform 0.15s,border-color 0.15s,box-shadow 0.15s;position:relative}
@@ -90,7 +93,7 @@ main{max-width:1400px;width:100%;margin:0 auto;padding:2rem;flex:1}
 .roblox-badge{position:absolute;top:0.4rem;left:0.4rem;background:rgba(0,162,255,0.9);border-radius:4px;padding:0.1rem 0.4rem;font-size:0.58rem;font-weight:700;color:#fff;letter-spacing:0.3px}
 
 /* HOVER PREVIEW */
-.hover-preview{position:fixed;z-index:500;width:250px;background:var(--surface);border:1px solid var(--border);border-radius:12px;box-shadow:0 16px 48px rgba(0,0,0,0.8);overflow:hidden;pointer-events:none;opacity:0;transition:opacity 0.18s;top:0;left:0}
+.hover-preview{position:fixed;z-index:500;width:260px;background:var(--surface);border:1px solid var(--border);border-radius:12px;box-shadow:0 16px 48px rgba(0,0,0,0.8);overflow:hidden;opacity:0;transition:opacity 0.2s;top:0;left:0;pointer-events:none}
 .hover-preview.visible{opacity:1}
 .hp-img{width:100%;height:140px;object-fit:cover;background:var(--surface2);display:block}
 .hp-img-ph{width:100%;height:90px;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:2.2rem}
@@ -478,7 +481,7 @@ function renderGrid(){
     container.innerHTML=`<div class="empty"><div class="empty-icon">${currentTab==='planned'?'📋':'✅'}</div><h3>${currentTab==='planned'?'Noch nichts geplant':'Noch nichts erledigt'}</h3><p style="color:var(--muted);font-size:0.9rem;margin-top:0.5rem">Füge deinen ersten Eintrag hinzu!</p></div>`;
     return;
   }
-  container.innerHTML=`<div class="grid">${filtered.map(cardHTML).join('')}</div>`;
+  container.innerHTML=`<div class="grid${currentCat==='spiel'?' game-grid':''}">${filtered.map(cardHTML).join('')}</div>`;
 }
 
 function cardHTML(e){
@@ -488,17 +491,19 @@ function cardHTML(e){
   const ph=`<div class="card-poster-ph"${hasCover?' style="display:none"':''}>${CE[e.category]||'📌'}<span>${CL[e.category]||''}</span></div>`;
   const done=e.status==='done'?`<div class="card-done-overlay">✓</div>`:'';
   const rob=e.modus==='Roblox'?`<div class="roblox-badge">ROBLOX</div>`:'';
-  const tag=e.genre?`<span style="font-size:0.6rem;color:var(--muted)">${x(e.genre)}</span>`:'';
+  const tag=e.genre?`<span style="font-size:0.6rem;color:var(--muted)">${x(e.genre)}</span>`:''
+  const yearTag=e.tmdbYear?`<span style="font-size:0.6rem;color:var(--muted)">${x(e.tmdbYear)}</span>`:'';
   return `<div class="card${isGame?' game-card':''}" 
     onclick="openDetail('${e.id}')"
     onmouseenter="scheduleHover(event,'${e.id}')"
-    onmouseleave="cancelHover()">
+    onmouseleave="cancelHover()"
+    ontouchstart="cancelHover()">
     ${done}${rob}${img}${ph}
     <div class="card-body">
       <div class="card-title">${x(e.title)}</div>
       <div class="card-meta">
         <span class="cat-badge cat-${e.category}">${CL[e.category]}</span>
-        ${tag}<span class="status-dot ${e.status==='done'?'dot-done':'dot-planned'}"></span>
+        ${tag}${yearTag}<span class="status-dot ${e.status==='done'?'dot-done':'dot-planned'}"></span>
       </div>
     </div>
   </div>`;
@@ -544,42 +549,53 @@ function toggleSub(key,val,el){
 /* ═══ HOVER PREVIEW ═══ */
 function scheduleHover(evt,id){
   cancelHover();
-  hoverTimer=setTimeout(()=>showHover(evt,id),380);
+  // Capture rect immediately before timeout (element may move)
+  const rect=evt.currentTarget.getBoundingClientRect();
+  hoverTimer=setTimeout(()=>showHover(rect,id),400);
 }
 function cancelHover(){
   clearTimeout(hoverTimer);
-  document.getElementById('hoverPreview').classList.remove('visible');
+  const p=document.getElementById('hoverPreview');
+  p.style.opacity='0';
+  p.style.pointerEvents='none';
+  // don't use classList to avoid race with visible
 }
 
-async function showHover(evt,id){
-  const e=entries.find(x=>x.id===id);
+function showHover(rect,id){
+  const e=entries.find(z=>z.id===id);
   if(!e) return;
   const p=document.getElementById('hoverPreview');
 
-  // Position relative to viewport
-  const rect=evt.currentTarget.getBoundingClientRect();
-  let left=rect.right+10;
-  let top=rect.top;
-  if(left+260>window.innerWidth) left=rect.left-260;
-  if(top+320>window.innerHeight) top=window.innerHeight-320;
-  p.style.left=Math.max(4,left)+'px';
-  p.style.top=Math.max(4,top)+'px';
-
   const hasCover=e.cover&&e.cover.length>4;
   const isGame=e.category==='spiel';
-  const coverStyle=isGame?'height:140px;aspect-ratio:16/9':'height:140px';
-  const coverEl=hasCover?`<img class="hp-img" style="${coverStyle}" src="${x(e.cover)}" alt="">`:
-    `<div class="hp-img-ph" style="${coverStyle}">${CE[e.category]}</div>`;
+  const coverStyle=isGame?'width:100%;height:148px;object-fit:cover;background:var(--surface2);display:block':'width:100%;height:148px;object-fit:cover;background:var(--surface2);display:block';
+  const coverEl=hasCover
+    ?`<img style="${coverStyle}" src="${x(e.cover)}" alt="" onerror="this.style.display='none'">`
+    :`<div style="width:100%;height:90px;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:2.2rem">${CE[e.category]}</div>`;
 
   const cached=e.description;
-  const tags=[e.genre,e.modus,e.laufzeit,e.laenge].filter(Boolean);
+  const tags=[e.genre,e.modus,e.laufzeit,e.laenge,e.tmdbYear].filter(Boolean);
   p.innerHTML=`${coverEl}<div class="hp-body">
     <div class="hp-title">${x(e.title)}</div>
-    <div class="hp-desc" id="hpDesc">${cached?x(cached):'<span style="color:var(--muted);font-size:0.72rem">Lade…</span>'}</div>
+    ${e.tmdbYear?`<div style="font-size:0.7rem;color:var(--muted);margin-bottom:0.3rem">${x(e.tmdbYear)}</div>`:''}
+    <div class="hp-desc" id="hpDesc">${cached?x(cached).slice(0,220):'<span style="color:var(--muted);font-size:0.72rem">Lade Beschreibung…</span>'}</div>
     ${e.rating?`<div class="hp-rating">★ ${x(e.rating)}</div>`:''}
-    ${tags.length?`<div class="hp-tags">${tags.map(t=>`<span class="hp-tag">${x(t)}</span>`).join('')}</div>`:''}
+    ${tags.filter(t=>t!==e.tmdbYear).length?`<div class="hp-tags">${tags.filter(t=>t!==e.tmdbYear).map(t=>`<span class="hp-tag">${x(t)}</span>`).join('')}</div>`:''}
   </div>`;
-  p.classList.add('visible');
+
+  // Position: prefer right of card, flip left if no space
+  const W=p.offsetWidth||265;
+  const H=p.offsetHeight||320;
+  let left=rect.right+12;
+  let top=rect.top;
+  if(left+W>window.innerWidth-8) left=rect.left-W-12;
+  if(left<8) left=8;
+  if(top+H>window.innerHeight-8) top=window.innerHeight-H-8;
+  if(top<8) top=8;
+  p.style.left=left+'px';
+  p.style.top=top+'px';
+  p.style.opacity='1';
+  p.style.pointerEvents='auto';
 
   if(!cached) fetchAndCacheDesc(e,id);
 }
@@ -603,7 +619,7 @@ async function fetchAndCacheDesc(e,id){
       const i=d.results?.[0];
       if(i){desc=i.description_raw||'';rating=i.rating?.toFixed(1)||'';year=(i.released||'').slice(0,4);}
     } else if(e.category==='buch'){
-      const r=await fetch(`https://www.googleapis.com/books/v1/volumes?q=intitle:${enc(e.title)}&maxResults=1`);
+      const r=await fetch(`https://www.googleapis.com/books/v1/volumes?q=${enc(e.title)}&maxResults=1`);
       const d=await r.json();
       const v=d.items?.[0]?.volumeInfo;
       if(v){desc=v.description||'';rating=v.averageRating?.toFixed(1)||'';year=(v.publishedDate||'').slice(0,4);}
@@ -751,7 +767,8 @@ async function saveEntry(){
   const title=document.getElementById('eTitle').value.trim();
   if(!title){alert('Bitte Titel eingeben.');return;}
   const extra=getExtraData(addCat);
-  const data={title,category:addCat,cover:document.getElementById('eCover').value.trim(),note:document.getElementById('eNote').value.trim(),status:document.getElementById('eStatus').value,...extra};
+  const meta=window._pendingMeta||{};
+  const data={title,category:addCat,cover:document.getElementById('eCover').value.trim(),note:document.getElementById('eNote').value.trim(),status:document.getElementById('eStatus').value,...extra,description:meta.description||'',rating:meta.rating||'',tmdbYear:meta.tmdbYear||''};
   if(!firebaseReady) return;
   if(editingId){
     await db.collection('entries').doc(editingId).update(data);
@@ -759,6 +776,7 @@ async function saveEntry(){
     data.createdAt=firebase.firestore.FieldValue.serverTimestamp();
     await db.collection('entries').add(data);
   }
+  window._pendingMeta=null;
   closeModal('addModal');
 }
 
@@ -800,11 +818,21 @@ async function doSearch(q){
 
 async function apiSearch(cat,q){
   if(cat==='film'){
-    const r=await fetch(`https://api.themoviedb.org/3/search/movie?api_key=${TMDB_KEY}&query=${enc(q)}&language=de-DE`);
+    const r=await fetch(`https://api.themoviedb.org/3/search/movie?api_key=${TMDB_KEY}&query=${enc(q)}&language=de-DE&append_to_response=runtime`);
     const d=await r.json();
-    return(d.results||[]).map(i=>{
+    // Fetch runtime for top result only (avoid N requests)
+    const items=(d.results||[]).slice(0,6);
+    if(items.length){
+      try{
+        const det=await fetch(`https://api.themoviedb.org/3/movie/${items[0].id}?api_key=${TMDB_KEY}&language=de-DE`);
+        const dd=await det.json();
+        if(dd.runtime) items[0]._runtime=dd.runtime;
+      }catch(e2){}
+    }
+    return items.map((i,idx)=>{
       const genreName=TMDB_GENRES[i.genre_ids?.[0]]||'';
-      const laufzeit=i.runtime?(i.runtime<90?'< 90 Min':i.runtime<=120?'90–120 Min':'> 120 Min'):'';
+      const rt=i._runtime||0;
+      const laufzeit=rt?(rt<90?'< 90 Min':rt<=120?'90–120 Min':'> 120 Min'):'';
       return{title:i.title||'',poster:i.poster_path?TMDB_IMG+i.poster_path:'',
         year:(i.release_date||'').slice(0,4),genre:genreName,laufzeit,modus:'',
         description:i.overview||'',rating:i.vote_average?.toFixed(1)||''};
@@ -839,18 +867,18 @@ async function apiSearch(cat,q){
     });
   }
   if(cat==='buch'){
-    const r=await fetch(`https://www.googleapis.com/books/v1/volumes?q=intitle:${enc(q)}&maxResults=6&langRestrict=de`);
+    const r=await fetch(`https://www.googleapis.com/books/v1/volumes?q=${enc(q)}&maxResults=8`);
     const d=await r.json();
-    return(d.items||[]).map(i=>{
+    return(d.items||[]).filter(i=>i.volumeInfo).map(i=>{
       const v=i.volumeInfo||{};
       const pages=v.pageCount||0;
       const laenge=pages?pages<200?'< 200 S.':pages<=400?'200–400 S.':'> 400 S.':'';
-      // Best thumbnail
-      const poster=v.imageLinks?.extraLarge||v.imageLinks?.large||v.imageLinks?.medium||v.imageLinks?.thumbnail||'';
-      // Normalize category
+      // Best thumbnail - zoom trick for better resolution
+      const raw=v.imageLinks?.extraLarge||v.imageLinks?.large||v.imageLinks?.medium||v.imageLinks?.thumbnail||v.imageLinks?.smallThumbnail||'';
+      const poster=raw.replace('http:','https:').replace('&zoom=1','&zoom=3').replace('zoom=5','zoom=3');
       const rawCat=(v.categories||[])[0]||'';
       const genre=mapBookGenre(rawCat);
-      return{title:v.title||'',poster:poster.replace('http:','https:'),
+      return{title:v.title||'',poster,
         year:(v.publishedDate||'').slice(0,4),genre,laenge,modus:'',laufzeit:'',
         description:v.description||'',rating:v.averageRating?.toFixed(1)||''};
     });
@@ -1020,7 +1048,7 @@ document.addEventListener('click',e=>{
   const box=document.getElementById('apiBox');
   if(box&&!box.contains(e.target)&&e.target.id!=='eTitle') box.style.display='none';
   const hp=document.getElementById('hoverPreview');
-  if(hp&&!hp.contains(e.target)&&!e.target.closest('.card')) cancelHover();
+  if(hp&&!e.target.closest('.card')&&!e.target.closest('#hoverPreview')) cancelHover();
 });
 
 initApp();
